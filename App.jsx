@@ -1,100 +1,96 @@
-import React, { useEffect, useState } from "react";
+import { useState } from 'react';
+import './App.css';
 
-const RATE_SCHEDULE = [
-  { start: new Date("2029-07-01T00:00:00"), rate: 51.06 },
-  { start: new Date("2028-07-01T00:00:00"), rate: 49.57 },
-  { start: new Date("2027-07-01T00:00:00"), rate: 48.01 },
-  { start: new Date("2026-07-01T00:00:00"), rate: 46.39 },
-  { start: new Date("2000-01-01T00:00:00"), rate: 44.71 },
-];
+// Function to pick the right hourly rate by date
+function getRateForDate(date) {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // months are 0-indexed
+  const day = date.getDate();
 
-function getRateForDate(d = new Date()) {
-  for (const tier of RATE_SCHEDULE) {
-    if (d >= tier.start) return tier.rate;
-  }
-  return RATE_SCHEDULE.at(-1).rate;
+  // Switch dates for rate changes
+  if (year > 2029 || (year === 2029 && month >= 7 && day >= 1)) return 51.06;
+  if (year > 2028 || (year === 2028 && month >= 7 && day >= 1)) return 49.57;
+  if (year > 2027 || (year === 2027 && month >= 7 && day >= 1)) return 48.01;
+  if (year > 2026 || (year === 2026 && month >= 7 && day >= 1)) return 46.39;
+  return 44.71; // default base rate
 }
 
-function formatHoursMinutes(totalMinutes) {
-  const h = Math.floor(totalMinutes / 60);
-  const m = Math.round(totalMinutes % 60);
-  return `${h}h ${m}m`;
-}
+function App() {
+  const [start, setStart] = useState('');
+  const [end, setEnd] = useState('');
+  const [detention, setDetention] = useState(0);
+  const [offDuty, setOffDuty] = useState(0);
+  const [earned, setEarned] = useState(0);
 
-export default function App() {
-  const [offDuty, setOffDuty] = useState("");
-  const [onDuty, setOnDuty] = useState("");
-  const [autoRate, setAutoRate] = useState(true);
-  const [rate, setRate] = useState(() => getRateForDate());
-  const [results, setResults] = useState(null);
-  const [dark, setDark] = useState(false);
+  const calculate = () => {
+    if (!start || !end) return;
 
-  useEffect(() => {
-    document.body.classList.toggle("dark", dark);
-  }, [dark]);
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const hours = (endDate - startDate) / (1000 * 60 * 60);
 
-  useEffect(() => {
-    if (!autoRate || !onDuty) return;
-    setRate(getRateForDate(new Date(onDuty)));
-  }, [onDuty, autoRate]);
+    const detentionHours = Math.max(0, hours - offDuty);
+    const rate = getRateForDate(startDate);
+    const pay = detentionHours * rate;
 
-  function calculate() {
-    if (!offDuty || !onDuty) return;
-    const off = new Date(offDuty);
-    const on = new Date(onDuty);
-    const totalOffDuty = (on - off) / 60000; // minutes
-    const totalOffDutyHours = totalOffDuty / 60;
-    const detentionHours = Math.max(0, totalOffDutyHours - 15);
-    const detentionPay = detentionHours * rate;
-    setResults({ totalOffDuty, detentionHours, detentionPay });
-  }
+    setDetention(detentionHours);
+    setEarned(pay);
+  };
 
   return (
-    <div className="container">
-      <div className="header">
-        <div className="h1">Detention Time Calculator</div>
-        <div className="toggles">
-          <label className="toggle">
-            <input type="checkbox" checked={autoRate} onChange={e=>setAutoRate(e.target.checked)} /> Auto rate
-          </label>
-          <label className="toggle">
-            <input type="checkbox" checked={dark} onChange={e=>setDark(e.target.checked)} /> Dark
-          </label>
-        </div>
+    <div className="App">
+      <h1>Detention Time Calculator</h1>
+
+      <div>
+        <label>Start Time:</label>
+        <input
+          type="datetime-local"
+          value={start}
+          onChange={(e) => setStart(e.target.value)}
+        />
       </div>
 
-      <div className="card">
-        <div className="row">
-          <label className="label">Off Duty Date & Time (24h)</label>
-          <input className="input" type="datetime-local" value={offDuty} onChange={e=>setOffDuty(e.target.value)} />
-        </div>
-        <div className="row">
-          <label className="label">On Duty Date & Time (24h)</label>
-          <input className="input" type="datetime-local" value={onDuty} onChange={e=>setOnDuty(e.target.value)} />
-        </div>
-        <div className="row">
-          <label className="label">Hourly Rate ($)</label>
-          <input className="number" type="number" step="0.01" value={rate} onChange={e=>setRate(parseFloat(e.target.value)||0)} />
-          <div className="meta">
-            <div><strong>Engineers</strong></div>
-            <div>$44.71</div>
-            <div>7/1/26  $46.39</div>
-            <div>7/1/27  $48.01</div>
-            <div>7/1/28  $49.57</div>
-            <div>7/1/29  $51.06</div>
-            <div style={{marginTop:"4px", fontStyle:"italic", fontSize:"11px"}}>When Auto rate is on, the rate updates based on the On Duty date above. You can override it manually anytime.</div>
-          </div>
-        </div>
-        <button className="button" onClick={calculate}>Calculate</button>
+      <div>
+        <label>End Time:</label>
+        <input
+          type="datetime-local"
+          value={end}
+          onChange={(e) => setEnd(e.target.value)}
+        />
       </div>
 
-      {results && (
-        <div className="card results">
-          <p><strong>Total Time Off Duty:</strong> {formatHoursMinutes(results.totalOffDuty)}</p>
-          <p><strong>Detention Time:</strong> {results.detentionHours.toFixed(2)} hours</p>
-          <p className="earned">Total Earned: ${results.detentionPay.toFixed(2)}</p>
-        </div>
-      )}
+      <div>
+        <label>Off Duty Hours:</label>
+        <input
+          type="number"
+          value={offDuty}
+          onChange={(e) => setOffDuty(Number(e.target.value))}
+        />
+      </div>
+
+      <button onClick={calculate}>Calculate</button>
+
+      <div className="results">
+        <p>Total Off Duty: {offDuty} hrs</p>
+        <p>Total Detention: {detention.toFixed(2)} hrs</p>
+        <p>Amount Earned: ${earned.toFixed(2)}</p>
+      </div>
+
+      <small>
+        Hourly Rate Schedule:
+        <br />
+        Engineers $44.71
+        <br />
+        7/1/26 → $46.39
+        <br />
+        7/1/27 → $48.01
+        <br />
+        7/1/28 → $49.57
+        <br />
+        7/1/29 → $51.06
+      </small>
     </div>
   );
 }
+
+export default App;
