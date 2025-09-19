@@ -1,94 +1,97 @@
-import { useState } from 'react';
-import './App.css';
-
-// Function to pick the right hourly rate by date
-function getRateForDate(date) {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1; // months are 0-indexed
-  const day = date.getDate();
-
-  // Switch dates for rate changes
-  if (year > 2029 || (year === 2029 && month >= 7 && day >= 1)) return 51.06;
-  if (year > 2028 || (year === 2028 && month >= 7 && day >= 1)) return 49.57;
-  if (year > 2027 || (year === 2027 && month >= 7 && day >= 1)) return 48.01;
-  if (year > 2026 || (year === 2026 && month >= 7 && day >= 1)) return 46.39;
-  return 44.71; // default base rate
-}
+import React, { useState, useEffect } from "react";
+import "./style.css";
 
 function App() {
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
-  const [detention, setDetention] = useState(0);
-  const [offDuty, setOffDuty] = useState(0);
-  const [earned, setEarned] = useState(0);
+  const [hourlyRate, setHourlyRate] = useState(44.71);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [offDutyTime, setOffDutyTime] = useState(0);
+  const [totalDetention, setTotalDetention] = useState(0);
+  const [amountEarned, setAmountEarned] = useState(0);
 
-  const calculate = () => {
-    if (!start || !end) return;
+  // Automatically update hourly rate based on contract dates
+  useEffect(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1; // JS months are 0-based
+    const day = today.getDate();
 
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const hours = (endDate - startDate) / (1000 * 60 * 60);
+    if (year > 2029 || (year === 2029 && month >= 7 && day >= 1)) {
+      setHourlyRate(51.06);
+    } else if (year === 2028 && month >= 7 && day >= 1) {
+      setHourlyRate(49.57);
+    } else if (year === 2027 && month >= 7 && day >= 1) {
+      setHourlyRate(48.01);
+    } else if (year === 2026 && month >= 7 && day >= 1) {
+      setHourlyRate(46.39);
+    } else {
+      setHourlyRate(44.71);
+    }
+  }, []);
 
-    const detentionHours = Math.max(0, hours - offDuty);
-    const rate = getRateForDate(startDate);
-    const pay = detentionHours * rate;
+  const calculateDetention = () => {
+    if (!startTime || !endTime) {
+      alert("Please enter both start and end times.");
+      return;
+    }
 
-    setDetention(detentionHours);
-    setEarned(pay);
+    const start = new Date(`1970-01-01T${startTime}:00`);
+    const end = new Date(`1970-01-01T${endTime}:00`);
+
+    if (end <= start) {
+      alert("End time must be later than start time.");
+      return;
+    }
+
+    const totalMinutes = (end - start) / (1000 * 60);
+    const detentionMinutes = Math.max(0, totalMinutes - offDutyTime);
+    const detentionHours = detentionMinutes / 60;
+
+    setTotalDetention(detentionHours);
+    setAmountEarned((detentionHours * hourlyRate).toFixed(2));
   };
 
   return (
-    <div className="App">
+    <div className="container">
       <h1>Detention Time Calculator</h1>
 
-      <div>
-        <label>Start Time:</label>
-        <input
-          type="datetime-local"
-          value={start}
-          onChange={(e) => setStart(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <label>End Time:</label>
-        <input
-          type="datetime-local"
-          value={end}
-          onChange={(e) => setEnd(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <label>Off Duty Hours:</label>
-        <input
-          type="number"
-          value={offDuty}
-          onChange={(e) => setOffDuty(Number(e.target.value))}
-        />
-      </div>
-
-      <button onClick={calculate}>Calculate</button>
-
-      <div className="results">
-        <p>Total Off Duty: {offDuty} hrs</p>
-        <p>Total Detention: {detention.toFixed(2)} hrs</p>
-        <p>Amount Earned: ${earned.toFixed(2)}</p>
-      </div>
-
+      <label>Hourly Rate ($):</label>
+      <input
+        type="number"
+        value={hourlyRate}
+        step="0.01"
+        onChange={(e) => setHourlyRate(parseFloat(e.target.value))}
+      />
       <small>
-        Hourly Rate Schedule:
-        <br />
-        Engineers $44.71
-        <br />
-        7/1/26 → $46.39
-        <br />
-        7/1/27 → $48.01
-        <br />
-        7/1/28 → $49.57
-        <br />
-        7/1/29 → $51.06
+        Engineers $44.71  
+        <br /> 7/1/26 → $46.39  
+        <br /> 7/1/27 → $48.01  
+        <br /> 7/1/28 → $49.57  
+        <br /> 7/1/29 → $51.06
       </small>
+
+      <label>Start Time:</label>
+      <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+
+      <label>End Time:</label>
+      <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+
+      <label>Off Duty Time (minutes):</label>
+      <input
+        type="number"
+        value={offDutyTime}
+        onChange={(e) => setOffDutyTime(parseInt(e.target.value) || 0)}
+      />
+
+      <button onClick={calculateDetention}>Calculate</button>
+
+      {totalDetention > 0 && (
+        <div className="results">
+          <p>Total Off Duty Time: {offDutyTime} minutes</p>
+          <p>Total Detention Time: {totalDetention.toFixed(2)} hours</p>
+          <p>Amount Earned: ${amountEarned}</p>
+        </div>
+      )}
     </div>
   );
 }
