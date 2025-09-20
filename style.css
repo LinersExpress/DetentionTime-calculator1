@@ -1,4 +1,4 @@
-/* Reset some default browser styles */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
@@ -7,54 +7,63 @@
 
 body {
   font-family: Arial, sans-serif;
-  background-color: #f9f9f9;
+  background-color: #f4f6f8;
   color: #333;
-  line-height: 1.6;
+  line-height: 1.5;
   padding: 20px;
 }
 
-/* Main container */
+/* Container */
 .container {
   max-width: 600px;
   margin: 0 auto;
   background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Headings */
-h1, h2, h3 {
-  margin-bottom: 15px;
-  font-weight: 600;
+/* Heading */
+h1 {
+  text-align: center;
+  margin-bottom: 25px;
   color: #222;
 }
 
-/* Labels and inputs */
+/* Labels & Inputs */
 label {
   display: block;
-  margin: 10px 0 5px;
+  margin: 12px 0 6px;
   font-weight: bold;
+  font-size: 0.95rem;
 }
 
-input, select {
+input {
   width: 100%;
   padding: 10px;
-  margin-bottom: 15px;
+  font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007acc;
+  box-shadow: 0 0 4px rgba(0, 122, 204, 0.4);
 }
 
 /* Buttons */
 button {
+  width: 100%;
   background: #007acc;
   color: #fff;
+  padding: 12px;
+  font-size: 1rem;
   border: none;
-  padding: 10px 16px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 1rem;
+  transition: background 0.2s ease;
 }
 
 button:hover {
@@ -65,7 +74,22 @@ button:hover {
 .results {
   margin-top: 20px;
   padding: 15px;
-  background: #f1f1f1;
-  border-radius: 8px;
+  background: #f1f5f9;
   border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.results p {
+  margin: 8px 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Small text */
+small {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #555;
+  line-height: 1.4;
 }
