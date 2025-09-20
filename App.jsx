@@ -58,14 +58,14 @@ function App() {
     <div className="container">
       <h1>Detention Time Calculator</h1>
 
-      <label>Off Duty Start (24h format):</label>
+      <label>Off Duty:</label>
       <input
         type="datetime-local"
         value={offDutyTime}
         onChange={(e) => setOffDutyTime(e.target.value)}
       />
 
-      <label>On Duty Start (24h format):</label>
+      <label>On Duty:</label>
       <input
         type="datetime-local"
         value={onDutyTime}
@@ -92,7 +92,7 @@ function App() {
       {totalOffDuty > 0 && (
         <div className="results">
           <p>Total Off Duty Time: {totalOffDuty.toFixed(2)} hours</p>
-          <p>Total Detention Time (after 15 hrs): {totalDetention.toFixed(2)} hours</p>
+          <p>Total Detention Time: {totalDetention.toFixed(2)} hours</p>
           <p>Amount Earned: ${amountEarned}</p>
         </div>
       )}
