@@ -3,17 +3,17 @@ import "./style.css";
 
 function App() {
   const [hourlyRate, setHourlyRate] = useState(44.71);
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [offDutyTime, setOffDutyTime] = useState(0);
+  const [offDutyTime, setOffDutyTime] = useState("");
+  const [onDutyTime, setOnDutyTime] = useState("");
+  const [totalOffDuty, setTotalOffDuty] = useState(0);
   const [totalDetention, setTotalDetention] = useState(0);
   const [amountEarned, setAmountEarned] = useState(0);
 
-  // Automatically update hourly rate based on contract dates
+  // Auto-update hourly rate by contract dates
   useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth() + 1; // JS months are 0-based
+    const month = today.getMonth() + 1;
     const day = today.getDate();
 
     if (year > 2029 || (year === 2029 && month >= 7 && day >= 1)) {
@@ -30,23 +30,26 @@ function App() {
   }, []);
 
   const calculateDetention = () => {
-    if (!startTime || !endTime) {
-      alert("Please enter both start and end times.");
+    if (!offDutyTime || !onDutyTime) {
+      alert("Please enter both off duty and on duty times.");
       return;
     }
 
-    const start = new Date(`1970-01-01T${startTime}:00`);
-    const end = new Date(`1970-01-01T${endTime}:00`);
+    const offDuty = new Date(offDutyTime);
+    const onDuty = new Date(onDutyTime);
 
-    if (end <= start) {
-      alert("End time must be later than start time.");
+    if (onDuty <= offDuty) {
+      alert("On duty time must be later than off duty time.");
       return;
     }
 
-    const totalMinutes = (end - start) / (1000 * 60);
-    const detentionMinutes = Math.max(0, totalMinutes - offDutyTime);
-    const detentionHours = detentionMinutes / 60;
+    // total off duty hours
+    const totalHours = (onDuty - offDuty) / (1000 * 60 * 60);
 
+    // detention = total - 15 hours grace
+    const detentionHours = totalHours > 15 ? totalHours - 15 : 0;
+
+    setTotalOffDuty(totalHours);
     setTotalDetention(detentionHours);
     setAmountEarned((detentionHours * hourlyRate).toFixed(2));
   };
@@ -54,6 +57,20 @@ function App() {
   return (
     <div className="container">
       <h1>Detention Time Calculator</h1>
+
+      <label>Off Duty Start (24h format):</label>
+      <input
+        type="datetime-local"
+        value={offDutyTime}
+        onChange={(e) => setOffDutyTime(e.target.value)}
+      />
+
+      <label>On Duty Start (24h format):</label>
+      <input
+        type="datetime-local"
+        value={onDutyTime}
+        onChange={(e) => setOnDutyTime(e.target.value)}
+      />
 
       <label>Hourly Rate ($):</label>
       <input
@@ -70,25 +87,12 @@ function App() {
         <br /> 7/1/29 → $51.06
       </small>
 
-      <label>Start Time:</label>
-      <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-
-      <label>End Time:</label>
-      <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-
-      <label>Off Duty Time (minutes):</label>
-      <input
-        type="number"
-        value={offDutyTime}
-        onChange={(e) => setOffDutyTime(parseInt(e.target.value) || 0)}
-      />
-
       <button onClick={calculateDetention}>Calculate</button>
 
-      {totalDetention > 0 && (
+      {totalOffDuty > 0 && (
         <div className="results">
-          <p>Total Off Duty Time: {offDutyTime} minutes</p>
-          <p>Total Detention Time: {totalDetention.toFixed(2)} hours</p>
+          <p>Total Off Duty Time: {totalOffDuty.toFixed(2)} hours</p>
+          <p>Total Detention Time (after 15 hrs): {totalDetention.toFixed(2)} hours</p>
           <p>Amount Earned: ${amountEarned}</p>
         </div>
       )}
