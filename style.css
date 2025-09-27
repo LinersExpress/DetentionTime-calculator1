@@ -119,3 +119,19 @@ small {
     color: #aaa;
   }
 }
+.summary-card {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 16px;
+  border-radius: 10px;
+  margin-top: 20px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .summary-card {
+    background-color: #1a1a1a;
+    border-color: #333;
+  }
+}
