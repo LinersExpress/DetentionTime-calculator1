@@ -94,35 +94,30 @@ small {
   line-height: 1.4;
 }
 
-/* Dark mode */
+/* Dark Mode - AMOLED Black */
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #111;
-    color: #f4f4f4;
-  }
-
-  h1 {
-    color: #f4f4f4;
+    background-color: #000;
+    color: #fff;
   }
 
   .container {
-    background-color: #1e1e1e;
+    background-color: #0a0a0a;
     box-shadow: 0 3px 10px rgba(255, 255, 255, 0.05);
   }
 
-  input,
-  button {
-    background-color: #222;
-    color: #f4f4f4;
-    border: 1px solid #555;
+  input, button {
+    background-color: #121212;
+    color: #fff;
+    border: 1px solid #444;
   }
 
   .results {
-    background-color: #1a1a1a;
+    background-color: #111;
     border-color: #333;
   }
 
   small {
-    color: #aaa;
+    color: #888;
   }
 }
