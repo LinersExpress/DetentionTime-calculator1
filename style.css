@@ -93,3 +93,29 @@ small {
   color: #555;
   line-height: 1.4;
 }
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #111;
+    color: #f4f4f4;
+  }
+
+  .container {
+    background-color: #1e1e1e;
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.05);
+  }
+
+  input, button {
+    background-color: #222;
+    color: #f4f4f4;
+    border: 1px solid #555;
+  }
+
+  .results {
+    background-color: #1a1a1a;
+    border-color: #333;
+  }
+
+  small {
+    color: #aaa;
+  }
+}
