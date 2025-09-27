@@ -1,54 +1,56 @@
-import React, { useState, useEffect } from "react";
-import "./style.css";
+import React, { useState, useEffect } from 'react';
 
 const App = () => {
-  const [offDuty, setOffDuty] = useState("");
-  const [onDuty, setOnDuty] = useState("");
-  const [hourlyRate, setHourlyRate] = useState("");
+  const [offDuty, setOffDuty] = useState('');
+  const [onDuty, setOnDuty] = useState('');
+  const [hourlyRate, setHourlyRate] = useState('');
   const [results, setResults] = useState(null);
 
-  // Automatically set default hourly rate based on today's date
+  // Auto-set default hourly rate based on today's date
   useEffect(() => {
     const today = new Date();
-    const rateTable = [
-      { date: new Date("2029-07-01"), rate: 51.06 },
-      { date: new Date("2028-07-01"), rate: 49.57 },
-      { date: new Date("2027-07-01"), rate: 48.01 },
-      { date: new Date("2026-07-01"), rate: 46.39 },
-      { date: new Date("2024-07-01"), rate: 44.71 }
-    ];
-    const applicable = rateTable.find(entry => today >= entry.date);
-    if (applicable) setHourlyRate(applicable.rate.toFixed(2));
+    let rate = 44.71;
+
+    if (today >= new Date('2029-07-01')) rate = 51.06;
+    else if (today >= new Date('2028-07-01')) rate = 49.57;
+    else if (today >= new Date('2027-07-01')) rate = 48.01;
+    else if (today >= new Date('2026-07-01')) rate = 46.39;
+
+    setHourlyRate(rate.toFixed(2));
   }, []);
 
   const calculate = () => {
-    if (!offDuty || !onDuty || !hourlyRate) return;
-
-    const offTime = new Date(offDuty);
-    const onTime = new Date(onDuty);
-
-    if (isNaN(offTime) || isNaN(onTime) || offTime >= onTime) {
-      alert("Please enter valid date and time values.");
+    if (!offDuty || !onDuty || !hourlyRate) {
+      setResults(null);
       return;
     }
 
-    const totalMs = onTime - offTime;
+    const start = new Date(offDuty);
+    const end = new Date(onDuty);
+    const totalMs = end - start;
+
+    if (totalMs <= 0) {
+      setResults(null);
+      return;
+    }
+
     const totalMinutes = Math.floor(totalMs / 60000);
-    const detentionMinutes = Math.max(totalMinutes - 900, 0); // 15 hours = 900 minutes
+    const detentionMinutes = Math.max(0, totalMinutes - 600); // 10 hours = 600 minutes
 
-    const formatHM = (minutes) => {
-      const h = Math.floor(minutes / 60);
-      const m = minutes % 60;
-      const d = (minutes / 60).toFixed(2);
-      return `${h}h ${m}m (${d})`;
-    };
+    const offDutyHours = Math.floor(totalMinutes / 60);
+    const offDutyMins = totalMinutes % 60;
+    const decimalOffDuty = (totalMinutes / 60).toFixed(2);
 
-    const earned = (detentionMinutes / 60) * parseFloat(hourlyRate);
+    const detentionHours = Math.floor(detentionMinutes / 60);
+    const detentionMins = detentionMinutes % 60;
+    const decimalDetention = (detentionMinutes / 60).toFixed(2);
+
+    const amount = ((detentionMinutes / 60) * parseFloat(hourlyRate)).toFixed(2);
 
     setResults({
-      totalTime: formatHM(totalMinutes),
-      detentionTime: formatHM(detentionMinutes),
-      earned: `$${earned.toFixed(2)}`
+      offDuty: `${offDutyHours}h ${offDutyMins}m (${decimalOffDuty})`,
+      detention: `${detentionHours}h ${detentionMins}m (${decimalDetention})`,
+      amount: `$${amount}`,
     });
   };
 
@@ -79,24 +81,20 @@ const App = () => {
       />
 
       <small>
-        Engineers &nbsp; $44.71  
-        <br />
-        7/1/26 &nbsp; $46.39  
-        <br />
-        7/1/27 &nbsp; $48.01  
-        <br />
-        7/1/28 &nbsp; $49.57  
-        <br />
-        7/1/29 &nbsp; $51.06
+        Engineers  $44.71<br />
+        7/1/26    $46.39<br />
+        7/1/27    $48.01<br />
+        7/1/28    $49.57<br />
+        7/1/29    $51.06
       </small>
 
       <button onClick={calculate}>Calculate</button>
 
       {results && (
         <div className="results">
-          <p>⏰ <strong>Off Duty:</strong> {results.totalTime}</p>
-          <p>🕐 <strong>Detention Time:</strong> {results.detentionTime}</p>
-          <p>💵 <strong>Amount Earned:</strong> {results.earned}</p>
+          <p>⏰ <strong>Off Duty:</strong> {results.offDuty}</p>
+          <p>🕓 <strong>Detention Time:</strong> {results.detention}</p>
+          <p>💵 <strong>Amount Earned:</strong> {results.amount}</p>
         </div>
       )}
     </div>
