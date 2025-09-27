@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './index.css';
 
 function App() {
   const [offDuty, setOffDuty] = useState('');
