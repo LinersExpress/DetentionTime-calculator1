@@ -1,78 +1,74 @@
 import React, { useState, useEffect } from "react";
 import "./style.css";
 
-function App() {
-  const [offDutyDate, setOffDutyDate] = useState("");
-  const [offDutyTime, setOffDutyTime] = useState("");
-  const [onDutyDate, setOnDutyDate] = useState("");
-  const [onDutyTime, setOnDutyTime] = useState("");
+const App = () => {
+  const [offDuty, setOffDuty] = useState("");
+  const [onDuty, setOnDuty] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
   const [results, setResults] = useState(null);
 
-  // Automatically update hourly rate based on date
+  // Automatically set default hourly rate based on today's date
   useEffect(() => {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth(); // 0-indexed
-
-    let rate = 44.71;
-    if (year > 2029 || (year === 2029 && month >= 6)) rate = 51.06;
-    else if (year === 2028 && month >= 6) rate = 49.57;
-    else if (year === 2027 && month >= 6) rate = 48.01;
-    else if (year === 2026 && month >= 6) rate = 46.39;
-
-    setHourlyRate(rate.toFixed(2));
+    const rateTable = [
+      { date: new Date("2029-07-01"), rate: 51.06 },
+      { date: new Date("2028-07-01"), rate: 49.57 },
+      { date: new Date("2027-07-01"), rate: 48.01 },
+      { date: new Date("2026-07-01"), rate: 46.39 },
+      { date: new Date("2024-07-01"), rate: 44.71 }
+    ];
+    const applicable = rateTable.find(entry => today >= entry.date);
+    if (applicable) setHourlyRate(applicable.rate.toFixed(2));
   }, []);
 
-  const calculateTime = () => {
-    const offDuty = new Date(`${offDutyDate}T${offDutyTime}`);
-    const onDuty = new Date(`${onDutyDate}T${onDutyTime}`);
-    const totalMs = onDuty - offDuty;
+  const calculate = () => {
+    if (!offDuty || !onDuty || !hourlyRate) return;
 
-    if (isNaN(totalMs) || totalMs <= 0) {
-      setResults({ error: "Invalid time range." });
+    const offTime = new Date(offDuty);
+    const onTime = new Date(onDuty);
+
+    if (isNaN(offTime) || isNaN(onTime) || offTime >= onTime) {
+      alert("Please enter valid date and time values.");
       return;
     }
 
+    const totalMs = onTime - offTime;
     const totalMinutes = Math.floor(totalMs / 60000);
-    const totalHours = Math.floor(totalMinutes / 60);
-    const minutesLeft = totalMinutes % 60;
-    const totalDecimal = (totalMinutes / 60).toFixed(2);
+    const detentionMinutes = Math.max(totalMinutes - 900, 0); // 15 hours = 900 minutes
 
-    const detentionMinutes = Math.max(totalMinutes - 900, 0);
-    const detentionHours = Math.floor(detentionMinutes / 60);
-    const detentionLeft = detentionMinutes % 60;
-    const detentionDecimal = (detentionMinutes / 60).toFixed(2);
+    const formatHM = (minutes) => {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      const d = (minutes / 60).toFixed(2);
+      return `${h}h ${m}m (${d})`;
+    };
 
-    const earned = (detentionMinutes / 60) * parseFloat(hourlyRate || 0);
+    const earned = (detentionMinutes / 60) * parseFloat(hourlyRate);
 
     setResults({
-      total: `${totalHours}h ${minutesLeft}m (${totalDecimal})`,
-      detention: `${detentionHours}h ${detentionLeft}m (${detentionDecimal})`,
-      earned: earned.toLocaleString("en-US", {
-        style: "currency",
-        currency: "USD",
-      }),
+      totalTime: formatHM(totalMinutes),
+      detentionTime: formatHM(detentionMinutes),
+      earned: `$${earned.toFixed(2)}`
     });
   };
 
   return (
     <div className="container">
-      <h1 style={{ color: "#007acc", textAlign: "center" }}>
-        Detention Time Calculator
-      </h1>
+      <h1>Detention Time Calculator</h1>
 
-      <label>Previous Off Duty Date</label>
-      <input type="date" value={offDutyDate} onChange={(e) => setOffDutyDate(e.target.value)} />
+      <label>Previous Off Duty Date & Time</label>
+      <input
+        type="datetime-local"
+        value={offDuty}
+        onChange={(e) => setOffDuty(e.target.value)}
+      />
 
-      <label>Previous Off Duty Time</label>
-      <input type="time" value={offDutyTime} onChange={(e) => setOffDutyTime(e.target.value)} />
-
-      <label>On Duty Date</label>
-      <input type="date" value={onDutyDate} onChange={(e) => setOnDutyDate(e.target.value)} />
-
-      <label>On Duty Time</label>
-      <input type="time" value={onDutyTime} onChange={(e) => setOnDutyTime(e.target.value)} />
+      <label>On Duty Date & Time</label>
+      <input
+        type="datetime-local"
+        value={onDuty}
+        onChange={(e) => setOnDuty(e.target.value)}
+      />
 
       <label>Hourly Rate</label>
       <input
@@ -81,31 +77,30 @@ function App() {
         value={hourlyRate}
         onChange={(e) => setHourlyRate(e.target.value)}
       />
+
       <small>
-        Engineers  $44.71<br />
-          7/1/26    $46.39<br />
-          7/1/27    $48.01<br />
-          7/1/28    $49.57<br />
-          7/1/29    $51.06
+        Engineers &nbsp; $44.71  
+        <br />
+        7/1/26 &nbsp; $46.39  
+        <br />
+        7/1/27 &nbsp; $48.01  
+        <br />
+        7/1/28 &nbsp; $49.57  
+        <br />
+        7/1/29 &nbsp; $51.06
       </small>
 
-      <button onClick={calculateTime}>Calculate</button>
+      <button onClick={calculate}>Calculate</button>
 
       {results && (
         <div className="results">
-          {results.error ? (
-            <p style={{ color: "red" }}>{results.error}</p>
-          ) : (
-            <>
-              <p>🕒 <strong>Off Duty:</strong> {results.total}</p>
-              <p>⏱️ <strong>Detention Time:</strong> {results.detention}</p>
-              <p>💵 <strong>Amount Earned:</strong> {results.earned}</p>
-            </>
-          )}
+          <p>⏰ <strong>Off Duty:</strong> {results.totalTime}</p>
+          <p>🕐 <strong>Detention Time:</strong> {results.detentionTime}</p>
+          <p>💵 <strong>Amount Earned:</strong> {results.earned}</p>
         </div>
       )}
     </div>
   );
-}
+};
 
 export default App;
