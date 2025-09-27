@@ -93,9 +93,15 @@ small {
   color: #555;
   line-height: 1.4;
 }
+
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
   body {
     background-color: #111;
+    color: #f4f4f4;
+  }
+
+  h1 {
     color: #f4f4f4;
   }
 
@@ -104,7 +110,8 @@ small {
     box-shadow: 0 3px 10px rgba(255, 255, 255, 0.05);
   }
 
-  input, button {
+  input,
+  button {
     background-color: #222;
     color: #f4f4f4;
     border: 1px solid #555;
@@ -117,21 +124,5 @@ small {
 
   small {
     color: #aaa;
-  }
-}
-.summary-card {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  padding: 16px;
-  border-radius: 10px;
-  margin-top: 20px;
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-@media (prefers-color-scheme: dark) {
-  .summary-card {
-    background-color: #1a1a1a;
-    border-color: #333;
   }
 }
