@@ -59,7 +59,7 @@ function App() {
         type="datetime-local"
         value={offDutyDateTime}
         onChange={(e) => setOffDutyDateTime(e.target.value)}
-        className="narrow-input"
+        style={{ width: "75%" }}
       />
 
       <label>On Duty Date & Time</label>
@@ -67,7 +67,7 @@ function App() {
         type="datetime-local"
         value={onDutyDateTime}
         onChange={(e) => setOnDutyDateTime(e.target.value)}
-        className="narrow-input"
+        style={{ width: "75%" }}
       />
 
       <label>Hourly Rate</label>
@@ -75,7 +75,7 @@ function App() {
         type="number"
         value={hourlyRate}
         onChange={(e) => setHourlyRate(e.target.value)}
-        className="narrow-input"
+        style={{ width: "75%" }}
       />
 
       <small>
