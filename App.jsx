@@ -4,117 +4,120 @@ function App() {
   const [offDutyDateTime, setOffDutyDateTime] = useState("");
   const [onDutyDateTime, setOnDutyDateTime] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
-  const [result, setResult] = useState(null);
+  const [offDutyDuration, setOffDutyDuration] = useState("");
+  const [detentionDuration, setDetentionDuration] = useState("");
+  const [amountEarned, setAmountEarned] = useState(null);
+
+  const rateSchedule = [
+    { date: "2029-07-01", rate: 51.06 },
+    { date: "2028-07-01", rate: 49.57 },
+    { date: "2027-07-01", rate: 48.01 },
+    { date: "2026-07-01", rate: 46.39 },
+    { date: "2025-07-01", rate: 44.71 },
+  ];
 
   useEffect(() => {
-    const now = new Date();
-    const offset = now.getTimezoneOffset();
-    now.setMinutes(now.getMinutes() - offset);
-    setOffDutyDateTime(now.toISOString().slice(0, 16));
-  }, []);
-
-  useEffect(() => {
-    if (onDutyDateTime) {
-      const selectedDate = new Date(onDutyDateTime);
-      const year = selectedDate.getFullYear();
-      const month = selectedDate.getMonth();
-      const day = selectedDate.getDate();
-
-      let newRate = 44.71;
-      if (year > 2029 || (year === 2029 && month >= 6 && day >= 1)) newRate = 51.06;
-      else if (year === 2028 && month >= 6 && day >= 1) newRate = 49.57;
-      else if (year === 2027 && month >= 6 && day >= 1) newRate = 48.01;
-      else if (year === 2026 && month >= 6 && day >= 1) newRate = 46.39;
-
-      setHourlyRate(newRate.toFixed(2));
+    if (offDutyDateTime) {
+      const currentDate = new Date(offDutyDateTime);
+      const matchedRate = rateSchedule.find(schedule => currentDate >= new Date(schedule.date));
+      if (matchedRate) setHourlyRate(matchedRate.rate.toFixed(2));
     }
-  }, [onDutyDateTime]);
+  }, [offDutyDateTime]);
+
+  const formatDuration = (ms) => {
+    const totalMinutes = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const decimalHours = (ms / 3600000).toFixed(2);
+    return `${hours}h ${minutes}m (${decimalHours})`;
+  };
 
   const handleCalculate = () => {
     const start = new Date(offDutyDateTime);
     const end = new Date(onDutyDateTime);
+    if (isNaN(start) || isNaN(end) || end <= start || isNaN(parseFloat(hourlyRate))) return;
 
-    if (isNaN(start) || isNaN(end) || end <= start) {
-      alert("Please enter valid date & time values.");
-      return;
-    }
+    const msDifference = end - start;
+    const detentionMs = Math.max(0, msDifference - 10 * 60 * 60 * 1000);
+    setOffDutyDuration(formatDuration(msDifference));
+    setDetentionDuration(formatDuration(detentionMs));
 
-    const totalMs = end - start;
-    const totalMin = Math.floor(totalMs / 60000);
-    const detentionMin = Math.max(0, totalMin - 600);
-    const totalHours = Math.floor(totalMin / 60);
-    const totalRemainingMin = totalMin % 60;
-    const detentionHours = Math.floor(detentionMin / 60);
-    const detentionRemainingMin = detentionMin % 60;
-    const detentionDecimal = (detentionMin / 60).toFixed(2);
-    const totalDecimal = (totalMin / 60).toFixed(2);
-    const earned = (detentionMin / 60) * parseFloat(hourlyRate || 0);
-
-    setResult({
-      total: `${totalHours}h ${totalRemainingMin}m (${totalDecimal})`,
-      detention: `${detentionHours}h ${detentionRemainingMin}m (${detentionDecimal})`,
-      earned: `$${earned.toFixed(2)}`
-    });
+    const hours = detentionMs / 3600000;
+    setAmountEarned((hours * parseFloat(hourlyRate)).toFixed(2));
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
-      <div className="max-w-md mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-white">Detention Time Calculator</h1>
+    <div style={{ backgroundColor: "#000000", minHeight: "100vh", color: "#ffffff", padding: "1rem", fontFamily: "Arial, sans-serif" }}>
+      <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>Detention Time Calculator</h1>
 
-        <label className="block mb-2 font-semibold">Previous Off Duty Date & Time</label>
-        <input
-          type="datetime-local"
-          value={offDutyDateTime}
-          onChange={(e) => setOffDutyDateTime(e.target.value)}
-          className="w-[90%] mb-4 p-2 bg-neutral-900 text-white border border-gray-700 rounded"
-        />
+      <label style={{ display: "block", marginTop: "1rem", fontWeight: "bold" }}>Previous Off Duty Date & Time</label>
+      <input
+        type="datetime-local"
+        value={offDutyDateTime}
+        onChange={(e) => setOffDutyDateTime(e.target.value)}
+        style={{ width: "90%", maxWidth: "320px", padding: "0.5rem", backgroundColor: "#1a1a1a", color: "#ffffff", border: "1px solid #444", borderRadius: "6px" }}
+      />
 
-        <label className="block mb-2 font-semibold">On Duty Date & Time</label>
-        <input
-          type="datetime-local"
-          value={onDutyDateTime}
-          onChange={(e) => setOnDutyDateTime(e.target.value)}
-          className="w-[90%] mb-4 p-2 bg-neutral-900 text-white border border-gray-700 rounded"
-        />
+      <label style={{ display: "block", marginTop: "1rem", fontWeight: "bold" }}>On Duty Date & Time</label>
+      <input
+        type="datetime-local"
+        value={onDutyDateTime}
+        onChange={(e) => setOnDutyDateTime(e.target.value)}
+        style={{ width: "90%", maxWidth: "320px", padding: "0.5rem", backgroundColor: "#1a1a1a", color: "#ffffff", border: "1px solid #444", borderRadius: "6px" }}
+      />
 
-        <label className="block mb-2 font-semibold">Hourly Rate</label>
-        <input
-          type="number"
-          value={hourlyRate}
-          onChange={(e) => setHourlyRate(e.target.value)}
-          className="w-[90%] mb-4 p-2 bg-neutral-900 text-white border border-gray-700 rounded"
-        />
+      <label style={{ display: "block", marginTop: "1rem", fontWeight: "bold" }}>Hourly Rate</label>
+      <input
+        type="number"
+        value={hourlyRate}
+        onChange={(e) => setHourlyRate(e.target.value)}
+        style={{ width: "90%", maxWidth: "200px", padding: "0.5rem", backgroundColor: "#1a1a1a", color: "#ffffff", border: "1px solid #444", borderRadius: "6px" }}
+      />
 
-        <div className="text-sm text-gray-400 mb-4">
-          Engineers  $44.71<br />
-          7/1/26    $46.39<br />
-          7/1/27    $48.01<br />
-          7/1/28    $49.57<br />
-          7/1/29    $51.06
-        </div>
-
-        <button
-          onClick={handleCalculate}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-        >
-          Calculate
-        </button>
-
-        {result && (
-          <div className="mt-6 p-4 rounded-lg bg-neutral-900 border border-gray-700">
-            <p className="mb-2">
-              <span className="text-red-500">⏰ <strong>Off Duty:</strong></span> {result.total}
-            </p>
-            <p className="mb-2">
-              <span className="text-gray-300">🕰️ <strong>Detention Time:</strong></span> {result.detention}
-            </p>
-            <p>
-              <span className="text-green-400">💵 <strong>Amount Earned:</strong></span> {result.earned}
-            </p>
-          </div>
-        )}
+      <div style={{ fontSize: "0.9rem", marginTop: "0.5rem", color: "#aaa" }}>
+        Engineers ${rateSchedule[4].rate.toFixed(2)}<br />
+        7/1/26 ${rateSchedule[3].rate.toFixed(2)}<br />
+        7/1/27 ${rateSchedule[2].rate.toFixed(2)}<br />
+        7/1/28 ${rateSchedule[1].rate.toFixed(2)}<br />
+        7/1/29 ${rateSchedule[0].rate.toFixed(2)}
       </div>
+
+      <button
+        onClick={handleCalculate}
+        style={{
+          marginTop: "1.5rem",
+          backgroundColor: "#007bff",
+          color: "#ffffff",
+          padding: "0.75rem 1.5rem",
+          border: "none",
+          borderRadius: "6px",
+          fontSize: "1.2rem",
+          width: "90%",
+          maxWidth: "320px"
+        }}
+      >
+        Calculate
+      </button>
+
+      {(offDutyDuration || detentionDuration || amountEarned) && (
+        <div style={{ marginTop: "2rem", backgroundColor: "#1a1a1a", padding: "1rem", borderRadius: "8px", border: "1px solid #333" }}>
+          {offDutyDuration && (
+            <div style={{ marginBottom: "0.5rem" }}>
+              ⏰ <strong>Off Duty:</strong> {offDutyDuration}
+            </div>
+          )}
+          {detentionDuration && (
+            <div style={{ marginBottom: "0.5rem" }}>
+              🕰️ <strong>Detention Time:</strong> {detentionDuration}
+            </div>
+          )}
+          {amountEarned && (
+            <div>
+              💵 <strong>Amount Earned:</strong> ${amountEarned}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
