@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; import "./App.css";
+import React, { useState, useEffect } from "react";
 
 function App() { const [offDutyDateTime, setOffDutyDateTime] = useState(""); const [onDutyDateTime, setOnDutyDateTime] = useState(""); const [hourlyRate, setHourlyRate] = useState("44.71"); const [results, setResults] = useState(null);
 
