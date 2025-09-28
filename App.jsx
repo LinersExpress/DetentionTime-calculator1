@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 function App() { const [offDutyDateTime, setOffDutyDateTime] = useState(""); const [onDutyDateTime, setOnDutyDateTime] = useState(""); const [hourlyRate, setHourlyRate] = useState("44.71"); const [offDutyDuration, setOffDutyDuration] = useState(""); const [detentionDuration, setDetentionDuration] = useState(""); const [amountEarned, setAmountEarned] = useState(null);
 
-const rateSchedule = [ { date: "2029-07-01", rate: 51.06 }, { date: "2028-07-01", rate: 49.57 }, { date: "2027-07-01", rate: 48.01 }, { date: "2026-07-01", rate: 46.39 }, { date: "2025-07-01", rate: 44.71 }, ];
+const rateSchedule = [ { date: "2029-07-01", rate: 51.06 }, { date: "2028-07-01", rate: 49.57 }, { date: "2027-07-01", rate: 48.01 }, { date: "2026-07-01", rate: 46.39 }, { date: "2025-07-01", rate: 44.71 } ];
 
 useEffect(() => { if (onDutyDateTime) { const dutyDate = new Date(onDutyDateTime); const matchedRate = rateSchedule.find(schedule => dutyDate >= new Date(schedule.date)); if (matchedRate) setHourlyRate(matchedRate.rate.toFixed(2)); } }, [onDutyDateTime]);
 
