@@ -41,7 +41,7 @@ function App() {
     if (isNaN(start) || isNaN(end) || end <= start || isNaN(parseFloat(hourlyRate))) return;
 
     const offDutyMs = end - start;
-    const detentionMs = Math.max(offDutyMs - 15 * 3600000, 0); // 10 hours = 36000000 ms
+    const detentionMs = Math.max(offDutyMs - 15 * 3600000, 0); // 15 hours = 36000000 ms
     const detentionHrs = detentionMs / 3600000;
     const earned = (detentionHrs * parseFloat(hourlyRate)).toFixed(2);
 
