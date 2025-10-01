@@ -19,7 +19,9 @@ function App() {
   useEffect(() => {
     if (onDutyDateTime) {
       const dutyDate = new Date(onDutyDateTime);
-      const matchedRate = rateSchedule.find(schedule => dutyDate >= new Date(schedule.date));
+      const matchedRate = rateSchedule.find(
+        schedule => dutyDate >= new Date(schedule.date)
+      );
       if (matchedRate) {
         setHourlyRate(matchedRate.rate.toFixed(2));
       }
@@ -41,7 +43,7 @@ function App() {
     if (isNaN(start) || isNaN(end) || end <= start || isNaN(parseFloat(hourlyRate))) return;
 
     const offDutyMs = end - start;
-    const detentionMs = Math.max(offDutyMs - 15 * 3600000, 0); // 15 hours = 36000000 ms
+    const detentionMs = Math.max(offDutyMs - 15 * 3600000, 0); // 15 hours = 54,000,000 ms
     const detentionHrs = detentionMs / 3600000;
     const earned = (detentionHrs * parseFloat(hourlyRate)).toFixed(2);
 
@@ -97,7 +99,12 @@ function App() {
             <p>🕰️ <strong>Detention Time:</strong> {detentionDuration}</p>
           )}
           {amountEarned && (
-            <p>💵 <strong>Amount Earned:</strong> {amountEarned}</p>
+            <>
+              <p>💵 <strong>Amount Earned:</strong> {amountEarned}</p>
+              <small style={{ color: "gray", fontSize: "0.85em" }}>
+                <em>Detention begins after 15 hours off duty</em>
+              </small>
+            </>
           )}
         </div>
       )}
